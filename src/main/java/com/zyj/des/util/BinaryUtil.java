@@ -4,14 +4,14 @@ public class BinaryUtil {
     //StringBuffer转成二进制
     public static StringBuffer stringBufferToBinary(StringBuffer s) {
         StringBuffer res = new StringBuffer();
-        for (int i = 0; i < s.length(); i++) {
-            StringBuffer stmp = new StringBuffer(Integer.toBinaryString(s.charAt(i)));
-            while (stmp.length() < 8) {  //转成8位二进制
+        s.toString().codePoints().forEach(item -> {
+            StringBuffer stmp = new StringBuffer(Integer.toBinaryString(item));
+            // 补充前导0
+            while (stmp.length() < 8) {
                 stmp.insert(0, 0);
             }
-            //System.out.println(stmp);
             res.append(stmp);
-        }
+        });
         return res;
     }
 

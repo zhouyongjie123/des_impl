@@ -81,7 +81,7 @@ public class DesCipher {
             }
 
             //循环结束后左右交换
-            StringBuffer RL = new StringBuffer(R.toString() + L.toString());
+            StringBuffer RL = new StringBuffer(R + L.toString());
 
             //终止置换
             RL = Final(RL);
@@ -90,7 +90,7 @@ public class DesCipher {
 
         //f轮函数
         public StringBuffer F(StringBuffer R, StringBuffer subkey) {
-            StringBuffer res = new StringBuffer();
+            StringBuffer res;
             //E盒扩展
             res = Extent(R);
             //异或运算
