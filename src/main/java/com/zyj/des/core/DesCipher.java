@@ -36,14 +36,12 @@ public class DesCipher {
 
     private StringBuffer expandTo64(StringBuffer stringBuffer){
         //扩充明文
-        while (stringBuffer.length() < 64 * (this.getGroupCount() + 1)) {
-            stringBuffer.append("0");
-        }
+//        while (stringBuffer.length() < 64 * (this.getGroupCount() + 1)) {
+//            stringBuffer.append("0");
+//        }
+        // 计算需要填充的字节数n
+        int paddingByteNum = 8 - (stringBuffer.length() % 8);
 //        // ======================== PKCS5Padding标准补位 ========================
-//        int totalBitLen = plainBackup.length();
-//        int groupBitLen = 64; // DES固定64位一组
-//        // 计算需要填充的位数n
-//        int paddingBitNum = groupBitLen - (totalBitLen % groupBitLen);
 ////         末尾填充 n个 "1" （标准补位规则）
 //        for (int p = 0; p < paddingBitNum; p++) {
 //            plainBackup.append("1");
@@ -52,9 +50,9 @@ public class DesCipher {
 //        // 计算需要填充的位数
 //        int paddingBitNum = 64 - (totalBitLength % 64);
 ////         末尾填充
-//        for (int p = 0; p < paddingBitNum; p++) {
-//            stringBuffer.append(paddingBitNum);
-//        }
+        for (int p = 0; p < paddingByteNum; p++) {
+            stringBuffer.append(paddingByteNum);
+        }
         return stringBuffer;
     }
 

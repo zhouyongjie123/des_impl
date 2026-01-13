@@ -2,6 +2,8 @@ package com.zyj.des.util;
 
 import com.zyj.des.core.DesCipher;
 
+import java.util.zip.GZIPOutputStream;
+
 import static com.zyj.des.util.BinaryUtil.BinaryTostringBuffer;
 import static com.zyj.des.util.BinaryUtil.stringBufferToBinary;
 
@@ -40,7 +42,9 @@ public class DesUtil {
         StringBuffer R = new StringBuffer();//右明文
         StringBuffer descipher = new StringBuffer();
         //分组解密
-        for (int i = 0; i <= 1; i++) {
+        // fixme i的取值要根据分组长度区分
+        int groupCount = plain.length() / 64 - 1;
+        for (int i = 0; i <= groupCount; i++) {
             //密文分组处理
             for (int j = 0; j < 64; j++) {
                 plain.replace(j, j + 1, ciphertext.substring(j + i * 64, j + 64 * i + 1));
@@ -54,6 +58,9 @@ public class DesUtil {
 //            System.out.println(i + "明文：" + BinaryTostringBuffer(plain));
             descipher.append(BinaryTostringBuffer(plain));
         }
+        char c = descipher.charAt(descipher.length() - 1);
+        // 删除descipher中最后c个字符
+        descipher.delete(descipher.length() - (c - '0'), descipher.length());
         return descipher.toString();
     }
 }
