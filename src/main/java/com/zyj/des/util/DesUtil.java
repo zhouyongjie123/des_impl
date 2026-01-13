@@ -2,8 +2,6 @@ package com.zyj.des.util;
 
 import com.zyj.des.core.DesCipher;
 
-import java.util.zip.GZIPOutputStream;
-
 import static com.zyj.des.util.BinaryUtil.BinaryTostringBuffer;
 import static com.zyj.des.util.BinaryUtil.stringBufferToBinary;
 
