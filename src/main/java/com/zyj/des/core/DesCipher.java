@@ -1,6 +1,5 @@
 package com.zyj.des.core;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -14,34 +13,67 @@ import static com.zyj.des.util.BinaryUtil.stringBufferToBinary;
 @Data
 @Accessors(chain = true)
 public class DesCipher {
-    private StringBuffer plaintext;  //明文字符串64 bits----8 bytes
+    private StringBuffer plaintext;  //明文字符串64 bits
 
-    private StringBuffer ciphertext;  //密文字符串64 bits----8 bytes
+    private StringBuffer secretKey;  //密钥字符串64 bits
 
-    private StringBuffer key;  //密钥字符串64 bits ----8 bytes
-
-    private int group;  //分组
+    private int groupCount;//分组数
 
     private DesStage desStage;
 
-    public DesCipher(StringBuffer plaintext, StringBuffer key){
-        this.plaintext = plaintext;
-        this.key = key;
-        // 设置分组数
-        this.group = plaintext.length() / 8;
-        //初始化stage
-        this.desStage = new DesStage(key);
+    public DesCipher(String plaintext, String secretKey) {
+        this(new StringBuffer(plaintext), new StringBuffer(secretKey));
     }
 
-    @AllArgsConstructor
+    public DesCipher(StringBuffer plaintext, StringBuffer secretKey) {
+        // 设置分组数
+        this.groupCount = plaintext.length() / 8;
+        this.plaintext = expandTo64(plaintext);
+        this.secretKey = secretKey;
+        //初始化stage
+        this.desStage = new DesStage(secretKey);
+    }
+
+    private StringBuffer expandTo64(StringBuffer stringBuffer){
+        //扩充明文
+        while (stringBuffer.length() < 64 * (this.getGroupCount() + 1)) {
+            stringBuffer.append("0");
+        }
+//        // ======================== PKCS5Padding标准补位 ========================
+//        int totalBitLen = plainBackup.length();
+//        int groupBitLen = 64; // DES固定64位一组
+//        // 计算需要填充的位数n
+//        int paddingBitNum = groupBitLen - (totalBitLen % groupBitLen);
+////         末尾填充 n个 "1" （标准补位规则）
+//        for (int p = 0; p < paddingBitNum; p++) {
+//            plainBackup.append("1");
+//        }
+//        int totalBitLength = stringBuffer.length();
+//        // 计算需要填充的位数
+//        int paddingBitNum = 64 - (totalBitLength % 64);
+////         末尾填充
+//        for (int p = 0; p < paddingBitNum; p++) {
+//            stringBuffer.append(paddingBitNum);
+//        }
+        return stringBuffer;
+    }
+
     public static final class DesStage {
-        private StringBuffer key;
+        private final StringBuffer secretKey;
+
+        public DesStage(String secretKey) {
+            this(new StringBuffer(secretKey));
+        }
+
+        public DesStage(StringBuffer secretKey) {
+            this.secretKey = secretKey;
+        }
 
         //初始置换IP
         public StringBuffer initial(StringBuffer r) {
             StringBuffer res = new StringBuffer();
             for (int i = 0; i < 64; i++) {
-                res.append(r.charAt(IP[i] - 1)); //数组的索引是从0开始的
+                res.append(r.charAt(IP[i] - 1));
             }
             return res;
         }
@@ -55,14 +87,8 @@ public class DesCipher {
                 StringBuffer[] tmp = getSubkey();  //mode ==1
                 for (int i = 0; i < 16; i++) {
                     subkey[i] = tmp[15 - i];
-                    //  System.out.println(i+"轮密钥："+subkey[i]);
                 }
             }
-
-            //查看密钥
-//        for (int i =0;i<16;i++){
-//            System.out.println(i+"轮密钥："+subkey[i]);
-//        }
 
             //16轮循环
             for (int i = 0; i < 16; i++) {
@@ -120,7 +146,7 @@ public class DesCipher {
         public StringBuffer P(StringBuffer r) {
             StringBuffer res = new StringBuffer();
             for (int i = 0; i < 32; i++) {
-                res.append(r.charAt(P[i] - 1)); //数组的索引是从0开始的
+                res.append(r.charAt(P[i] - 1));
             }
             return res;
         }
@@ -129,7 +155,7 @@ public class DesCipher {
         public StringBuffer Extent(StringBuffer r) {
             StringBuffer res = new StringBuffer();
             for (int i = 0; i < 48; i++) {
-                res.append(r.charAt(E[i] - 1)); //数组的索引是从0开始的
+                res.append(r.charAt(E[i] - 1));
             }
             return res;
         }
@@ -138,15 +164,15 @@ public class DesCipher {
         public StringBuffer Final(StringBuffer r) {
             StringBuffer res = new StringBuffer();
             for (int i = 0; i < 64; i++) {
-                res.append(r.charAt(IPReverse[i] - 1)); //数组的索引是从0开始的
+                res.append(r.charAt(IPReverse[i] - 1));
             }
             return res;
         }
 
         //密钥生成
         public StringBuffer[] getSubkey() {
-            StringBuffer keyBinary = new StringBuffer(stringBufferToBinary(key)); //把密钥转成二进制
-            StringBuffer subkey[] = new StringBuffer[16];  //subkey数组用来存储子密钥
+            StringBuffer keyBinary = new StringBuffer(stringBufferToBinary(secretKey)); //把密钥转成二进制
+            StringBuffer subkey[] = new StringBuffer[16];
             StringBuffer C0 = new StringBuffer(); //左密钥
             StringBuffer D0 = new StringBuffer(); //右密钥
             //判断密钥长度
@@ -186,7 +212,6 @@ public class DesCipher {
                     C0D0tmp.append(CODO.charAt(PC2[j] - 1));
                 }
                 subkey[i] = C0D0tmp;
-                //  System.out.println(i + "轮密钥：" + subkey[i]);
             }
             return subkey;
         }
