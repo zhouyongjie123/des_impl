@@ -34,22 +34,10 @@ public class DesCipher {
         this.desStage = new DesStage(secretKey);
     }
 
-    private StringBuffer expandTo64(StringBuffer stringBuffer){
-        //扩充明文
-//        while (stringBuffer.length() < 64 * (this.getGroupCount() + 1)) {
-//            stringBuffer.append("0");
-//        }
+    private StringBuffer expandTo64(StringBuffer stringBuffer) {
         // 计算需要填充的字节数n
         int paddingByteNum = 8 - (stringBuffer.length() % 8);
-//        // ======================== PKCS5Padding标准补位 ========================
-////         末尾填充 n个 "1" （标准补位规则）
-//        for (int p = 0; p < paddingBitNum; p++) {
-//            plainBackup.append("1");
-//        }
-//        int totalBitLength = stringBuffer.length();
-//        // 计算需要填充的位数
-//        int paddingBitNum = 64 - (totalBitLength % 64);
-////         末尾填充
+        // 末尾填充
         for (int p = 0; p < paddingByteNum; p++) {
             stringBuffer.append(paddingByteNum);
         }

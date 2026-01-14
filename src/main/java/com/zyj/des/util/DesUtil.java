@@ -10,7 +10,7 @@ public class DesUtil {
         return encrypt(new DesCipher(plaintext, key));
     }
 
-    public static String encrypt(DesCipher desCipher) {
+    private static String encrypt(DesCipher desCipher) {
         StringBuffer plain = stringBufferToBinary(desCipher.getPlaintext()); //明文转成二进制
         StringBuffer L = new StringBuffer();//左明文
         StringBuffer R = new StringBuffer();//右明文
@@ -39,8 +39,8 @@ public class DesUtil {
         StringBuffer L = new StringBuffer();//左明文
         StringBuffer R = new StringBuffer();//右明文
         StringBuffer descipher = new StringBuffer();
-        //分组解密
-        // fixme i的取值要根据分组长度区分
+        // 分组解密
+        // i的取值要根据分组长度区分
         int groupCount = plain.length() / 64 - 1;
         for (int i = 0; i <= groupCount; i++) {
             //密文分组处理
@@ -53,12 +53,53 @@ public class DesUtil {
             L.replace(0, 32, plain.substring(0, 32));
             R.replace(0, 32, plain.substring(32, 64));
             plain = desStage.iteration(L, R, 1);// plain是解密后的二进制密文
-//            System.out.println(i + "明文：" + BinaryTostringBuffer(plain));
             descipher.append(BinaryTostringBuffer(plain));
         }
-        char c = descipher.charAt(descipher.length() - 1);
-        // 删除descipher中最后c个字符
-        descipher.delete(descipher.length() - (c - '0'), descipher.length());
+        deleteMatchNumberAndSuffix(descipher);
         return descipher.toString();
+    }
+
+    /**
+     * 删除【最右侧符合规则的连续数字段】及【该段之后的所有字符】
+     * 匹配规则：存在 连续m个相同数字d ，满足 m = d(数字的字面量)
+     * 处理示例1：xxx333alcib → 删除333+alcib → 结果xxx
+     * 处理示例2：68656c6c6f20776f726c643388888888 ADUDD a → 删除88888888+空格+ADUDD+a → 结果68656c6c6f20776f726c6433
+     */
+    public static void deleteMatchNumberAndSuffix(StringBuffer sb) {
+        // 空串/空对象 直接返回
+        if (sb == null || sb.isEmpty()) {
+            return;
+        }
+
+        // 从字符串尾部 向前遍历扫描，找符合规则的数字段
+        for (int i = sb.length() - 1; i >= 0; i--) {
+            char currChar = sb.charAt(i);
+            // 遇到非数字，跳过继续向前找
+            if (!Character.isDigit(currChar)) {
+                continue;
+            }
+            // 拿到当前数字的字面量：就是需要连续出现的次数 m
+            int matchCount = currChar - '0';
+            // 数字是0 或 连续次数超过字符串长度，跳过
+            if (matchCount <= 0 || matchCount > i + 1) {
+                continue;
+            }
+            // 计算这个数字段的起始索引
+            int startIndex = i - matchCount + 1;
+            boolean isAllSame = true;
+            // 校验：从startIndex到i的所有字符，是否都是当前这个数字
+            for (int j = startIndex; j <= i; j++) {
+                if (sb.charAt(j) != currChar) {
+                    isAllSame = false;
+                    break;
+                }
+            }
+            // 匹配成功：删除【该数字段开始】到【字符串末尾】的所有内容，直接结束方法
+            if (isAllSame) {
+                sb.delete(startIndex, sb.length());
+                return;
+            }
+        }
+        // 遍历完没有匹配到符合规则的数字段，不做任何修改
     }
 }

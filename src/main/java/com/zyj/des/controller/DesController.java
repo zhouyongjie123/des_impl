@@ -1,6 +1,5 @@
 package com.zyj.des.controller;
 
-import com.zyj.des.core.DesCipher;
 import com.zyj.des.util.DesUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DesController {
     @GetMapping("/encrypt")
     public String encrypt(@RequestParam("plainText") String plainText, @RequestParam("secretKey") String secretKey) {
-        return DesUtil.encrypt(new DesCipher(plainText, secretKey));
+        return DesUtil.encrypt(plainText, secretKey);
     }
     @GetMapping("/decrypt")
     public String decrypt(@RequestParam("cipherText") String cipherText, @RequestParam("secretKey") String secretKey) {
